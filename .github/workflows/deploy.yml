@@ -1,0 +1,51 @@
+name: Deploy AWS
+
+# Disparado manualmente pelo botao "Run workflow" na aba Actions
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy CloudFormation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do codigo
+        uses: actions/checkout@v4
+
+      # Configura credenciais AWS a partir dos secrets do repositorio.
+      # No AWS Academy as credenciais sao TEMPORARIAS: quando expirarem,
+      # atualize os tres secrets em Settings -> Secrets and variables -> Actions.
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      # Descobre a VPC default da conta (sempre existe uma no Learner Lab).
+      - name: Descobrir VPC default
+        id: vpc
+        run: |
+          VPC_ID=$(aws ec2 describe-vpcs \
+            --filters "Name=isDefault,Values=true" \
+            --query "Vpcs[0].VpcId" \
+            --output text)
+          echo "vpc_id=$VPC_ID" >> $GITHUB_OUTPUT
+          echo "VPC default encontrada: $VPC_ID"
+
+      - name: Deploy do CloudFormation
+        run: |
+          aws cloudformation deploy \
+            --template-file infra.yml \
+            --stack-name catalogo-livros-deploy \
+            --parameter-overrides VpcId=${{ steps.vpc.outputs.vpc_id }} \
+            --no-fail-on-empty-changeset
+
+      - name: Mostrar URL da API
+        run: |
+          aws cloudformation describe-stacks \
+            --stack-name catalogo-livros-deploy \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
+            --output text
