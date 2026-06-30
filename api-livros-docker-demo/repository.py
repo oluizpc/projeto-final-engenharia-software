@@ -27,6 +27,10 @@ class RepositorioLivros(ABC):
         ...
 
     @abstractmethod
+    def buscar_por_isbn(self, isbn: str) -> Livro | None:
+        ...
+
+    @abstractmethod
     def adicionar(self, dados: LivroCriar) -> Livro:
         ...
 
@@ -57,6 +61,12 @@ class RepositorioEmMemoria(RepositorioLivros):
 
     def buscar_por_id(self, livro_id: int) -> Livro | None:
         return self._livros.get(livro_id)
+
+    def buscar_por_isbn(self, isbn: str) -> Livro | None:
+        for livro in self._livros.values():
+            if livro.isbn == isbn:
+                return livro
+        return None
 
     def adicionar(self, dados: LivroCriar) -> Livro:
         novo = Livro(
