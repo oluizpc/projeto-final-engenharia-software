@@ -5,10 +5,10 @@ from unittest.mock import MagicMock
 import pytest
 
 from exceptions import DadosLivroIncompletosError, IsbnDuplicadoError
-from main import ServicoLivros
 from models import Livro, LivroAtualizar, LivroCriar
 from openlibrary_client import ClienteLivrosExternos
 from repository import RepositorioLivros
+from service import ServicoLivros
 
 
 def _repo_mock(livro_existente: Livro | None = None) -> MagicMock:
