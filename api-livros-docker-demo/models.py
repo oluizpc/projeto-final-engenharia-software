@@ -10,9 +10,14 @@ from pydantic import BaseModel, Field
 
 
 class LivroCriar(BaseModel):
-    """Dados que o cliente envia para criar um livro (sem id)."""
-    titulo: str = Field(..., min_length=1, description="Titulo do livro")
-    autor: str = Field(..., min_length=1, description="Nome do autor")
+    """
+    Dados que o cliente envia para criar um livro (sem id).
+
+    titulo e autor sao opcionais: se omitidos, o service tenta completa-los
+    consultando a Open Library pelo ISBN (ver ServicoLivros.criar).
+    """
+    titulo: str | None = Field(None, min_length=1, description="Titulo do livro")
+    autor: str | None = Field(None, min_length=1, description="Nome do autor")
     ano: int = Field(..., ge=0, le=2100, description="Ano de publicacao")
     isbn: str = Field(..., min_length=1, description="Codigo ISBN")
 
