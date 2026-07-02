@@ -114,3 +114,14 @@ def test_remover_livro_inexistente(client):
     resposta = client.delete("/livros/999")
 
     assert resposta.status_code == 404
+
+
+def test_criar_livro_isbn_invalido_isbn_vazio(client):
+    """ISBN vazio deve ser rejeitado pelo Pydantic."""
+    response = client.post("/livros", json={
+        "titulo": "Livro Teste",
+        "autor": "Autor Teste",
+        "ano": 2024,
+        "isbn": ""
+    })
+    assert response.status_code == 422
